@@ -9,9 +9,19 @@ const config = {
     database: 'nodedb'
 };
 
-const mysql = require('mysql2')
+const mysql = require('mysql2');
 
-const connection = mysql.createConnection(config)
+const connection = mysql.createConnection(config);
+
+var createTablePeople = "CREATE TABLE people (id not null auto_increment, name VARCHAR(255), primary key id)";
+
+connection.query(createTablePeople, (error, results, fields) => {
+    if (error) {
+        throw error
+    };
+
+    console.log('Table created')
+});
 
 app.get('/', async (req,res) => {
     const RANDOM = Math.floor(Math.random() * 10);
