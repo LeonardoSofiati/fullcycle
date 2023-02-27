@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  nginx:
+    build:  
+      context: ./nginx
+      dockerfile: Dockerfile.prod
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    networks:
+      - node-network
+    depends_on:
+      - app
+      - db
+
+  app:
+    build:
+      context: ./node
+      dockerfile: Dockerfile.prod
+    container_name: app
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh node index.js #Isso é para o dockerize ficar esperando o "db" subir antes do app em Node subir para não dar conflito
+    networks:
+      - node-network
+    volumes:
+      - ./node:/home/node/app
+      - /home/node/app/node_modules
+    tty: true
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    command: --innodb-use-native-aio=0 # Esse comando precisa rodar apenas para o mysql
+    container_name: db
+    restart: always
+    tty: true # Para poder deixar o container interativo
+    volumes:
+      - ./mysql:/var/lib/mysql # Sempre que o cara tiver alterando algo no banco que está na pasta "mysql" as coisas que são alteradas serão gravadas no volume do container na "var/lib/mysql", se matar o container e subir novamente, não perdemos os dados do Mysql
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - node-network
+
+networks:
+  node-network:
+    driver: bridge
