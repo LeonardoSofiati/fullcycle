@@ -13,7 +13,9 @@ const mysql = require('mysql2');
 
 const connection = mysql.createConnection(config);
 
-var createTablePeople = "CREATE TABLE people (id not null auto_increment, name VARCHAR(255), primary key id)";
+let createTablePeople = `CREATE TABLE IF NOT EXISTS people2
+        (id INT AUTO_INCREMENT PRIMARY KEY, 
+        name VARCHAR(255), address VARCHAR(255))`;
 
 connection.query(createTablePeople, (error, results, fields) => {
     if (error) {
@@ -26,12 +28,12 @@ connection.query(createTablePeople, (error, results, fields) => {
 app.get('/', async (req,res) => {
     const RANDOM = Math.floor(Math.random() * 10);
 
-    const sql = `INSERT INTO people(name) values('Leonardo ${RANDOM}')`
+    const sql = `INSERT INTO people2(name) values('Leonardo ${RANDOM} Sofiati')`
     connection.query(sql)
 
     let tableUsers = '<table><thead><tr><th>#</th><th>Name</th></tr></thead><tbody>';
 
-    const getUsers = `SELECT id, name FROM people`;
+    const getUsers = `SELECT id, name FROM people2`;
 
     connection.query(getUsers, (error, results, fields) => {
         if (error) {
